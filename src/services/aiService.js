@@ -1,6 +1,6 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const OpenRouter = require("openrouter").default;
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const client = new OpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
 
 async function normalizeMessage(message) {
   const prompt = `
@@ -15,11 +15,15 @@ Salida: {"type":"income","amount":5000,"source":"trabajo"}
 Ahora procesa: "${message}"
 `;
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
+  const response = await client.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [{ role: "user", content: prompt }],
+  });
 
-  // A veces Gemini devuelve con ```json ... ```
+  // OpenRouter devuelve un array de choices
+  const text = response.choices[0].message.content;
+
+  // Limpiar posibles ```json ... ```
   const cleaned = text.replace(/```json|```/g, "").trim();
   return JSON.parse(cleaned);
 }
