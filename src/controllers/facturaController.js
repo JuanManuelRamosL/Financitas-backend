@@ -1,31 +1,43 @@
 const Afip = require("@afipsdk/afip.js");
-
-const afip = new Afip({
-  CUIT: process.env.AFIP_CUIT, // tu CUIT
-  cert: process.env.AFIP_CERT_PATH, // ruta al .crt
-  key: process.env.AFIP_KEY_PATH, // ruta al .key
-  production: true, // true para producción, false para testing
-});
+const User = require("../models/User");
 
 async function emitirFactura(req, res) {
   try {
     const { docNro, importeNeto, importeIVA, tipo } = req.body;
+    const userId = req.user?.id; // o lo que uses para obtener al usuario autenticado
 
-    if (!docNro || !importeNeto || !importeIVA) {
+    if (!userId) {
+      return res.status(401).json({ error: "Usuario no autenticado" });
+    }
+
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    if (!user.cuit || !user.puntoVenta || !user.certPath || !user.keyPath) {
       return res.status(400).json({
-        error: "docNro, importeNeto e importeIVA son requeridos",
+        error:
+          "El usuario no tiene configurado CUIT, certificado o punto de venta",
       });
     }
 
-    const ptoVta = parseInt(process.env.AFIP_PTO_VTA || "1", 10);
+    // Instancia AFIP con los datos del usuario
+    const afip = new Afip({
+      CUIT: Number(user.cuit),
+      cert: user.certPath,
+      key: user.keyPath,
+      production: true,
+    });
 
-    // tipo 1 = Factura A, 6 = Factura B, etc.
+    const ptoVta = user.puntoVenta;
     const data = {
       CantReg: 1,
       PtoVta: ptoVta,
-      CbteTipo: tipo || 6, // por defecto Factura B
+      CbteTipo: tipo || 6, // Factura B por defecto
       Concepto: 1,
-      DocTipo: 80, // CUIT del cliente
+      DocTipo: 80, // CUIT cliente
       DocNro: parseInt(docNro),
       CbteDesde: 1,
       CbteHasta: 1,
