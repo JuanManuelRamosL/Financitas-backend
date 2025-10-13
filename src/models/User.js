@@ -8,7 +8,12 @@ const User = sequelize.define("User", {
   puntoVenta: { type: DataTypes.INTEGER, allowNull: true },
   certPath: { type: DataTypes.STRING, allowNull: true },
   keyPath: { type: DataTypes.STRING, allowNull: true },
-  taxCategory: { type: DataTypes.STRING, allowNull: true }, // e.g. "responsable_inscripto"
+  taxCategory: { type: DataTypes.STRING, allowNull: true },
+  paidThisMonth: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  }, // nuevo campo
 });
 
 module.exports = User;

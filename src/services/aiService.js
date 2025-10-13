@@ -8,7 +8,7 @@ try {
 
 // HARDCODEAR LA API KEY PARA PRUEBA
 const OPENROUTER_API_KEY =
-  "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";
+  "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";
 console.log("API KEY OpenRouter:", OPENROUTER_API_KEY);
 
 async function normalizeMessage(message) {
@@ -30,7 +30,6 @@ Ahora procesa: "${message}"
       method: "POST",
       headers: {
         Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "https://financitas.com",
         "X-Title": "Financitas Backend",
         "Content-Type": "application/json",
       },

@@ -21,4 +21,37 @@ async function createUser(req, res) {
   }
 }
 
-module.exports = { createUser };
+const getPaidStatus = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findByPk(id);
+    if (!user)
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    res.json({ paidThisMonth: user.paidThisMonth });
+  } catch (error) {
+    res.status(500).json({ message: "Error interno", error });
+  }
+};
+
+// Actualizar pago del mes
+const updatePaidStatus = async (req, res) => {
+  const { id } = req.params;
+  const { paidThisMonth } = req.body;
+  try {
+    const user = await User.findByPk(id);
+    if (!user)
+      return res.status(404).json({ message: "Usuario no encontrado" });
+
+    user.paidThisMonth = paidThisMonth;
+    await user.save();
+
+    res.json({
+      message: "Estado de pago actualizado",
+      paidThisMonth: user.paidThisMonth,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error interno", error });
+  }
+};
+
+module.exports = { createUser, getPaidStatus, updatePaidStatus };
